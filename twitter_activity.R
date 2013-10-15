@@ -32,29 +32,32 @@ registerTwitterOAuth(twitCred)
 
 ## Search for total number of tweets about SOFI 2013 since official
 ## launch date.
-sofiSearch = searchTwitteR("#SOFI2013", n = 1000, since = "2013-10-01")
+sofiSearch = searchTwitteR("SOFI2013", n = 3000, since = "2013-10-01",
+    until = "2013-10-02")
 
 ## Plot the number of tweets against time
 sofiSearch.df = do.call("rbind", lapply(sofiSearch, as.data.frame))
 sofiSearch.df$tweetNumber = NROW(sofiSearch.df):1
+## jpeg(file = "sofi_first_day_tweets.jpg", width = 600)
 with(sofiSearch.df,
      plot(created, tweetNumber, type = "l",
           ylab = "Number of tweets about SOFI 2013",
-          xlab = "Time (UTC)")
+          xlab = "Time (UTC 00:00)")
      )
+## graphics.off()
 
 ## Only serach tweets in English
-sofiSearchEn = searchTwitteR("#SOFI2013", n = 1000,  lang = "en",
-    since = "2013-10-01")
+sofiSearchEn = searchTwitteR("SOFI2013", n = 3000,  lang = "en",
+    since = "2013-10-01", until = "2013-10-02")
 sofiSearchEn.df = do.call("rbind", lapply(sofiSearchEn, as.data.frame))
-
+sofiInitial.df = sofiSearchEn.df[-grep("RT", sofiSearchEn.df$text), ]
 
 ## Convert text to corpus and perform standard sanitization such as to
 ## lower case, remove punctuation and numbers.
-myCorpus = Corpus(VectorSource(sofiSearchEn.df$text))
+myCorpus = Corpus(VectorSource(sofiInitial.df$text))
 myCorpus = tm_map(myCorpus, tolower)
 myCorpus = tm_map(myCorpus, removePunctuation)
-myCorpus <- tm_map(myCorpus, removeNumbers)
+myCorpus = tm_map(myCorpus, removeNumbers)
 removeURL = function(x) gsub("http[[:alnum:]]*", "", x)
 myCorpus = tm_map(myCorpus, removeURL)
 myStopwords = stopwords("SMART")
@@ -70,16 +73,12 @@ stemmedCorpus = tm_map(stemmedCorpus, gsub, pattern="hungry",
                    replacement="hunger")
 stemmedCorpus = tm_map(stemmedCorpus, gsub, pattern="chronically",
                    replacement="chronic")
+stemmedCorpus = tm_map(stemmedCorpus, gsub, pattern="sofi",
+                   replacement="sofi2013")
 
 tdm = TermDocumentMatrix(stemmedCorpus,
     control=list(wordLengths=c(1,Inf)))
 
-## Plot the word cloud
-wordcloudMatrix = as.matrix(tdm)
-wordFreq = sort(rowSums(wordcloudMatrix), decreasing=TRUE)
-grayLevels = gray((wordFreq+10) / (max(wordFreq)+10))
-wordcloud(words=names(wordFreq), freq=wordFreq, min.freq=3,
-          random.order=F, colors=grayLevels)
 
 
 ## Load Sentimental Lexicon from Hu and Liu
@@ -87,6 +86,19 @@ poswords = scan(file = "positive-words.txt", what = "character",
     comment.char = ";")
 negwords = scan(file = "negative-words.txt", what = "character",
     comment.char = ";")
+
+## Plot the word cloud
+wordcloudMatrix = as.matrix(tdm)
+wordFreq = sort(rowSums(wordcloudMatrix), decreasing=TRUE)
+wordFreq.df = data.frame(word = names(wordFreq), freq = wordFreq)
+wordFreq.df$col = ifelse(wordFreq.df$word %in% poswords, "blue",
+    ifelse(wordFreq.df$word %in% negwords, "red", "grey50"))
+
+## jpeg("word_cloud.jpg")
+with(wordFreq.df, wordcloud(words = word, freq = freq, min.freq = 0,
+                            random.order = FALSE, colors = col,
+                            random.color = FALSE, ordered.colors = TRUE))
+## graphics.off()
 
 ## Read the score_sentiment function from Jeffrey Breen
 source("score_sentiment.R")
@@ -97,35 +109,3 @@ scoring = tm_map(x = stemmedCorpus, FUN = score_sentiment,
 
 sofiTweetScores = sapply(scoring, FUN = function(x) x$score)
 plot(table(sofiTweetScores))
-
-
-## Plot network association (Incomplete)
-networkMatrix = as.matrix(tdm)
-networkMatrix[networkMatrix >= 1] = 1
-networkMatrix = networkMatrix %*% t(networkMatrix)
-
-
-library(igraph)
-# build a graph from the above matrix
-g <- graph.adjacency(networkMatrix, weighted=TRUE, mode="undirected")
-# remove loops
-g <- simplify(g)
-# set labels and degrees of vertices
-V(g)$label <- V(g)$name
-V(g)$degree <- degree(g)
-set.seed(3952)
-layout1 <- layout.fruchterman.reingold(g)
-plot(g, layout=layout1)
-
-
-## library(network)
-## test = network(networkMatrix)
-## pdf(file = "networkTest.pdf", width = 20, height = 20)
-## plot(test, displaylabels = TRUE, label.col = "steelblue",
-##      label.cex = 2, vertex.border = "white",
-##      vertex.col = "skyblue", edge.col = rgb(0, 0, 0, alpha = 0.5))
-## graphics.off()
-## system("evince networkTest.pdf&")
-## system("rm networkTest.pdf")
-
-
