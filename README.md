@@ -2,7 +2,7 @@
 
 A project to monitor and observe the social audience of the State of Food Insecurity (SOFI) 2013
 
-![The Wheat Network](word_cloud.png?raw=true "Test")
+![word_cloud](word_cloud.png?raw=true "sofi word cloud")
 
 ## Resources
 
