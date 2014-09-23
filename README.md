@@ -1,7 +1,8 @@
 # Monitoring SOFI Twitter feeds
 
-A pilot project to monitor and observe the social audience of the State of Food Insecurity (SOFI) 2013
+A project to monitor and observe the social audience of the State of Food Insecurity (SOFI) 2013
 
+![The Wheat Network](word_cloud.png?raw=true "Test")
 
 ## Resources
 
