@@ -1,8 +1,9 @@
 # Monitoring SOFI Twitter feeds
 
-A project to monitor and observe the social audience of the State of Food Insecurity (SOFI) 2013
+A project to monitor and observe the social audience of the State of
+Food Insecurity (SOFI) 2013
 
-![word_cloud](word_cloud.png?raw=true "sofi word cloud")
+![word_cloud](word_cloud.jpg?raw=true "sofi word cloud")
 
 ## Resources
 
