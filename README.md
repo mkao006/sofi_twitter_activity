@@ -1,10 +1,9 @@
-Monitoring SOFI Twitter feeds
-=======
+# Monitoring SOFI Twitter feeds
 
 A pilot project to monitor and observe the social audience of the State of Food Insecurity (SOFI) 2013
-========================================================================
 
-**Resources**
+
+## Resources
 
 [Accessing twitter via R twitteR](http://stathack.wordpress.com/2013/06/13/getting-started-with-twitter-in-r/)
 
